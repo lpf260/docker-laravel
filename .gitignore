@@ -1,0 +1,6 @@
+.idea
+.git
+redis/data
+mysql/data
+website/vendor
+nginx/data
