@@ -19,6 +19,10 @@ class UsersController extends Controller
         $this->middleware('guest', [
             'only' => ['create']
         ]);
+
+        $this->middleware('throttle:10,60', [
+            'only' => ['store']
+        ]);
     }
 
     public function index()
@@ -34,7 +38,11 @@ class UsersController extends Controller
 
     public function show(User $user)
     {
-        return view('users.show', compact('user'));
+        $status = $user->statuses()
+                        ->orderBy('created_at', 'desc')
+                        ->paginate(10);
+
+        return view('users.show', compact('user', 'statuses'));
     }
 
     public function store(Request $request)
@@ -102,13 +110,12 @@ class UsersController extends Controller
     {
         $view = 'emails.confirm';
         $data = compact('user');
-        $from = 'lpf260@qq.com';
-        $name = 'Summer';
+        $from = $user->email;
         $to = $user->email;
         $subject = "感谢注册Weibo应用！请确认您的邮箱";
 
-        Mail::send($view, $data, function ($message) use ($from, $name, $to, $subject) {
-            $message->from($from, $name)->to($to)->subject($subject);
+        Mail::send($view, $data, function ($message) use ( $to, $subject) {
+            $message->to($to)->subject($subject);
         });
     }
 
